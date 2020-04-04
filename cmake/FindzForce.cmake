@@ -15,9 +15,9 @@ unset(ZFORCE_INCLUDE_DIRS)
 unset(ZFORCE_LIBS)
 
 # Only 64-bit support
-if("{CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
+if ("{CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
     message(ERROR "32-bit is not supported")
-endif()
+endif ()
 
 # Set base path for zForce library
 #
@@ -30,10 +30,10 @@ endif()
 if (WIN32)
     message(STATUS "zForce for Windows")
     set(_ZFORCE_PATH_HINT ${ZFORCE_SDK}/Windows/x86-64)
-else()
+    set(_ZFORCE_SHARED_LIB zForce.dll)
+else ()
     message(STATUS "zForce for Linux")
     set(_ZFORCE_PATH_HINT ${ZFORCE_SDK}/Linux/x86-64)
-
     #TODO do we want ARMv6+VFPv2? I don't have any hardware to test it.
 endif (WIN32)
 
@@ -48,6 +48,19 @@ find_library(ZFORCE_LIBS NAMES
         ${_ZFORCE_LIB_NAME}
         HINTS
         ${_ZFORCE_PATH_HINT})
+
+function(ZFORCE_COPY_LIB TARGET OUTPUT)
+    if (WIN32)
+        # Copy dll
+    else ()
+        # Copy everything
+        set(_ZFORCE_SHARED_LIB ${ZFORCE_LIBS})
+    endif (WIN32)
+    message(STATUS "Copying ${_ZFORCE_SHARED_LIB} to ${CMAKE_CURRENT_BINARY_DIR}")
+    add_custom_command(TARGET ${TARGET}
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${_ZFORCE_PATH_HINT}/${_ZFORCE_SHARED_LIB}" "${OUTPUT}/${_ZFORCE_SHARED_LIB}")
+endfunction()
 
 # debugging
 message(DEBUG "Using SDK root: ${ZFORCE_SDK} and looking for ${_ZFORCE_LIB_NAME} on ${_ZFORCE_PATH_HINT}")

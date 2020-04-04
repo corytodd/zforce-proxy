@@ -30,13 +30,13 @@ if (MSVC)
             VERSION_PATCH ${PROJECT_VERSION_PATCH}
             VERSION_REVISION ${PROJECT_VERSION_TWEAK}
     )
-else()
+else ()
     set(VersionFilesOutputVariable)
 endif ()
 
 # Dependencies --------------------------------------------------------------
 set(ZFORCE_SDK ${CMAKE_SOURCE_DIR}/ext/zForceSDK)
-find_package(zForce REQUIRED)
+find_package(zForce REQUIRED IMPORTED)
 
 # Binary --------------------------------------------------------------------
 add_library(${LIBRARY_TARGET_NAME}
@@ -59,6 +59,8 @@ target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC
 
 target_include_directories(${LIBRARY_TARGET_NAME} PRIVATE
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
+
+ZFORCE_COPY_LIB(${LIBRARY_TARGET_NAME} ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 
 # Installation---------------------------------------------------------------
 install(TARGETS ${LIBRARY_TARGET_NAME}
