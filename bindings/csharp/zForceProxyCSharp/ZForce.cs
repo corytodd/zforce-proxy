@@ -38,9 +38,15 @@
         /// <returns></returns>
         public Task StartDevice()
         {
-            NativeMethods.Connect();
+            if (NativeMethods.Connect() != NativeMethods.ZForceCode.Ok)
+            {
+                return null;
+            }
 
-            NativeMethods.Configure();
+            if (NativeMethods.Configure() != NativeMethods.ZForceCode.Ok)
+            {
+                return null;
+            }
 
             return Task.Run(MessageLoop);
         }
@@ -53,7 +59,10 @@
             _running = true;
             while (_running)
             {
-                NativeMethods.ProcessNextMessage();
+                if (NativeMethods.ProcessNextMessage() != NativeMethods.ZForceCode.Ok)
+                {
+                    _running = false;
+                }
             }
         }
     }

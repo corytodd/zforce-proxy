@@ -46,7 +46,7 @@ namespace zForceProxyCSharp.Internal
         /// <returns></returns>
         public static ZForceCode Configure()
         {
-            var ret = zforce_connect();
+            var ret = zforce_configure();
             return (ZForceCode) ret;
         }
 
