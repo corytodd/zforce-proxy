@@ -60,26 +60,34 @@ int main(int argc, char **argv) {
 
     zforce_return_t ret;
 
-    while (l_cli.state != state_error) {
+    while (l_cli.state != state_stopped) {
         switch (l_cli.state) {
 
         case state_startup:
             // Configure cli
-            LOG_INFO("Entered the startup state.");
+            LOG_INFO("Starting up...");
             ret = zforce_initialize();
             l_cli.state = ret == zforce_ok ? state_init : state_error;
             break;
 
         case state_init:
             // Configure library
-            LOG_INFO("Entered the init state.");
-            l_cli.state = state_config;
+            LOG_INFO("Entering initialization state...");
+            ret = zforce_connect();
+            l_cli.state = ret == zforce_ok ? state_config : state_error;
             break;
 
         case state_config:
             // Configure connection and device
-            LOG_INFO("Entered the configuration state.");
-            l_cli.state = state_idle;
+            LOG_INFO("Entering configuration state...");
+            ret = zforce_configure();
+
+            if (ret == zforce_ok) {
+                l_cli.state = state_idle;
+                LOG_INFO("Starting message processing loop");
+            } else {
+                l_cli.state = state_error;
+            }
             break;
 
         case state_idle:
@@ -87,21 +95,23 @@ int main(int argc, char **argv) {
             break;
 
         case state_shutdown:
-            LOG_INFO("Entered the shutdown state.");
+            LOG_INFO("Shutting down...");
             zforce_deinitialize();
             l_cli.state = state_stopped;
-            break;
-
-        case state_stopped:
-            LOG_INFO("Entered the stopped state.");
             break;
 
         case state_error:
             LOG_ERROR("An error condition was triggered.");
             l_cli.return_code = -1;
+            l_cli.state = state_shutdown;
+            break;
+
+        default:
             break;
         }
     }
+
+    LOG_INFO("Shutdown complete.");
 
     return l_cli.return_code;
 }

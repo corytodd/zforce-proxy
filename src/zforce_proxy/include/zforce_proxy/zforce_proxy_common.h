@@ -39,6 +39,8 @@
 #define ALWAYS_ASSERT(...) ((void)0)
 #else
 
+#define STRINGIFY(x) #x
+
 #define LOG_LEVEL_ASSERT (0)
 #define LOG_LEVEL_INFO (1)
 #define LOG_LEVEL_ERROR (2)

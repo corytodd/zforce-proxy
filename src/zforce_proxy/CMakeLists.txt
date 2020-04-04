@@ -4,11 +4,18 @@ set(LIBRARY_TARGET_NAME zforce_proxy)
 set(${LIBRARY_TARGET_NAME}_SRC
         src/zforce_proxy.c
         src/zforce_proxy_common.c
+        src/zforce_dump_message.c
+        src/zforce_error_string.c
         )
 
 set(${LIBRARY_TARGET_NAME}_HDR_PUBLIC
         include/zforce_proxy/zforce_proxy_common.h
         include/zforce_proxy/zforce_proxy.h
+        )
+
+set(${LIBRARY_TARGET_NAME}_HDR_PUBLIC
+        include/zforce_proxy/zforce_dump_message.h
+        include/zforce_proxy/zforce_error_string.h
         )
 
 configure_file(config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
@@ -42,6 +49,7 @@ find_package(zForce REQUIRED IMPORTED)
 add_library(${LIBRARY_TARGET_NAME}
         ${${LIBRARY_TARGET_NAME}_SRC}
         ${${LIBRARY_TARGET_NAME}_HDR_PUBLIC}
+        ${${LIBRARY_TARGET_NAME}_HDR_PRIVATE}
         ${VersionFilesOutputVariable})
 add_library(${PROJECT_NAME}::${LIBRARY_TARGET_NAME} ALIAS ${LIBRARY_TARGET_NAME})
 
