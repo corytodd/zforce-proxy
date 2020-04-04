@@ -13,19 +13,20 @@ extern "C" {
  * @brief Simplified return codes
  */
 typedef enum {
-    zforce_ok,                  ///< Success, etc. Pick your synonym.
-    zforce_init_failed,         ///< Could not initialize zForce library
-    zforce_already_connected,   ///< Library is already connected
-    zforce_connection_error,    ///< Failed to connect, see error code for more details
-    zforce_configuration_error, ///< Failed to configure, see error code for more details
-} zforce_return_t;
+    zforce_ok,                        ///< Success, etc. Pick your synonym.
+    zforce_error_init_failed,         ///< Could not initialize zForce library
+    zforce_error_already_connected,   ///< Library is already connected
+    zforce_error_connection_error,    ///< Failed to connect, see error code for more details
+    zforce_error_configuration_error, ///< Failed to configure, see error code for more details
+    zforce_error_message_read,        ///< Error reading message
+} zforce_error_t;
 
 /**
  * @brief Initialize this library
  *
  * @retval zforce_ok library read
  */
-zforce_return_t zforce_initialize(void);
+zforce_error_t zforce_initialize(void);
 
 /**
  * @brief Create a new connection
@@ -33,7 +34,7 @@ zforce_return_t zforce_initialize(void);
  * @retval zforce_ok connection succeeded
  * @retval zforce_connection_error check zForce SDK for error code
  */
-zforce_return_t zforce_connect();
+zforce_error_t zforce_connect();
 
 /**
  * @brief Configure the hardware's operation mode
@@ -41,7 +42,14 @@ zforce_return_t zforce_connect();
  * @retval zforce_ok connection succeeded
  * @retval zforce_configuration_error check SDK for error code meaning
  */
-zforce_return_t zforce_configure(void);
+zforce_error_t zforce_configure(void);
+
+/**
+ * @brief Fetch and dump the next available device message
+ *
+ * @retval zforce_ok message read and printed okay
+ */
+zforce_error_t zforce_process_next_message(void);
 
 /**
  * @brief Cleanup this library

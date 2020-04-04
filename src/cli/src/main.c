@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
     // Install the Control-C handler.
     signal(SIGINT, cli_signal_handler);
 
-    zforce_return_t ret;
+    zforce_error_t ret;
 
     while (l_cli.state != state_stopped) {
         switch (l_cli.state) {
@@ -92,6 +92,8 @@ int main(int argc, char **argv) {
 
         case state_idle:
             // Process message loop
+            ret = zforce_process_next_message();
+            l_cli.state = ret == zforce_ok ? state_idle : state_error;
             break;
 
         case state_shutdown:
