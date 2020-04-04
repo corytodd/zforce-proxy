@@ -24,6 +24,7 @@ set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Options -------------------------------------------------------------------------
+option(BUILD_SHARED_LIBS "Build libraries as shared as opposed to static" ON)
 option(ENABLE_LOGGING "Enable info and error logging" ON)
 option(ENABLE_ANSI_COLORS "Enable ANSI console colors" OFF)
 
