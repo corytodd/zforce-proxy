@@ -38,8 +38,32 @@
 #define ASSERT(x, ...) ((void)0)
 #define ALWAYS_ASSERT(...) ((void)0)
 #else
-bool assertHandler(const char *test, const char *func, const char *file, size_t line, const char *fmt, ...);
+
+#define LOG_LEVEL_ASSERT (0)
+#define LOG_LEVEL_INFO (1)
+#define LOG_LEVEL_ERROR (2)
+/**
+ * @brief Logging helper
+ * @param level LOG_LEVEL_ASSERT, LOG_LEVEL_INFO, LOG_LEVEL_ERROR
+ * @param test assertion test (if level == 0)
+ * @param func calling function
+ * @param file containing function
+ * @param line line of function in file
+ * @param fmt printf format string
+ * @param ... printf format args
+ * @retval false assertion failed
+ * @retval true no assertion or assertion passed
+ */
+bool logMessage(int level, const char *test, const char *func, const char *file, size_t line, const char *fmt, ...);
 #define ASSERT_ENABLED 1
-#define ASSERT(x, ...) (!!(x) || assertHandler(#x, __func__, __FILE__,__LINE__ , ## __VA_ARGS__ ) || (DEBUG_BREAK, true))
-#define ALWAYS_ASSERT(...) (assertHandler(nullptr, __func__, __FILE__,__LINE__ , ## __VA_ARGS__ ) || (DEBUG_BREAK, true))
+#define ASSERT(x, ...) (!!(x) || logMessage(LOG_LEVEL_ASSERT, #x, __func__, __FILE__,__LINE__ , ## __VA_ARGS__ ) || (DEBUG_BREAK, true))
+#define ALWAYS_ASSERT(...) (logMessage(LOG_LEVEL_ASSERT, NULL, __func__, __FILE__,__LINE__ , ## __VA_ARGS__ ) || (DEBUG_BREAK, true))
+#endif
+
+#if ENABLE_LOGGING == 1
+#define LOG_INFO(...) logMessage(LOG_LEVEL_INFO, NULL, __func__, __FILE__,__LINE__ , ## __VA_ARGS__ )
+#define LOG_ERROR(...) logMessage(LOG_LEVEL_ERROR, NULL, __func__, __FILE__,__LINE__ , ## __VA_ARGS__ )
+#else
+#define LOG_INFO(...) ((void)0)
+#define LOG_ERROR(...) ((void)0)
 #endif
