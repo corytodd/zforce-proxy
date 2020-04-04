@@ -1,2 +1,6 @@
 /.idea/
 /cmake-build-*/
+**/.idea/*
+/bindings/**/obj/**
+/bindings/**/bin/**
+*.sln.DotSettings.user
