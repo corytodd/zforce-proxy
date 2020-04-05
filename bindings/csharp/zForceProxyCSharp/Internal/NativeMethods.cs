@@ -9,7 +9,7 @@ namespace zForceProxyCSharp.Internal
     internal static class NativeMethods
     {
         private const string DllName = "zforce_proxy";
-        
+
         [DllImport(DllName, CharSet = CharSet.Auto)]
         private static extern int zforce_initialize();
 
@@ -66,15 +66,15 @@ namespace zForceProxyCSharp.Internal
             }
 
             Size? size = null;
-            if (touchEvent.hasSizeX || touchEvent.hasSizeY)
+            if (touchEvent.hasSize)
             {
                 size = new Size((int) touchEvent.sizeX, (int) touchEvent.sizeY);
             }
 
-            Point? position = null;
-            if (touchEvent.hasSizeX || touchEvent.hasSizeY)
+            ZPoint? position = null;
+            if (touchEvent.hasPosition)
             {
-                position = new Point((int) touchEvent.X, (int) touchEvent.Y);
+                position = new ZPoint(touchEvent.X, touchEvent.Y, touchEvent.Z);
             }
 
             return new TouchEvent(touchEvent.eventType, size, position);
@@ -100,45 +100,20 @@ namespace zForceProxyCSharp.Internal
         }
 
 
-
         [StructLayout(LayoutKind.Sequential, Pack = 2)]
         private struct ZTouchEvent
         {
             /// <summary>
-            ///     True if X has a value
+            ///     True if the position values are set
             /// </summary>
             [MarshalAs(UnmanagedType.I1)]
-            public readonly bool hasX;
+            public readonly bool hasPosition;
 
             /// <summary>
-            ///     True if sizeX has a value
+            ///     True if the size values are set
             /// </summary>
             [MarshalAs(UnmanagedType.I1)]
-            public readonly bool hasSizeX;
-
-            /// <summary>
-            ///     True if Y has a value
-            /// </summary>
-            [MarshalAs(UnmanagedType.I1)]
-            public readonly bool hasY;
-
-            /// <summary>
-            ///     True if sizeY has a value
-            /// </summary>
-            [MarshalAs(UnmanagedType.I1)]
-            public readonly bool hasSizeY;
-
-            /// <summary>
-            ///     True if Z has a value
-            /// </summary>
-            [MarshalAs(UnmanagedType.I1)]
-            public readonly bool hasZ;
-
-            /// <summary>
-            ///     True if sizeZ has a value
-            /// </summary>
-            [MarshalAs(UnmanagedType.I1)]
-            private readonly bool hasSizeZ;
+            public readonly bool hasSize;
 
             /// <summary>
             ///     Type of touch event
@@ -166,19 +141,19 @@ namespace zForceProxyCSharp.Internal
             public readonly uint sizeZ;
 
             /// <summary>
-            ///     X coordinate
+            ///     X logical coordinate
             /// </summary>
-            public readonly uint X;
+            public readonly float X;
 
             /// <summary>
-            ///     Y coordinate
+            ///     Y logical coordinate
             /// </summary>
-            public readonly uint Y;
+            public readonly float Y;
 
             /// <summary>
-            ///     Z coordinate
+            ///     Z logical coordinate
             /// </summary>
-            public readonly uint Z;
+            public readonly float Z;
         }
     }
 }

@@ -39,12 +39,18 @@ namespace zForceProxyCSharp
     /// </summary>
     public readonly struct TouchEvent
     {
-        public TouchEvent(ZEventType eventType, Size? size, Point? position)
+        /// <summary>
+        ///     Create a new touch event
+        /// </summary>
+        /// <param name="eventType">Type event</param>
+        /// <param name="size">Size of detected touch in pixels</param>
+        /// <param name="logicalPoint">Logical position of touch event</param>
+        public TouchEvent(ZEventType eventType, Size? size, ZPoint? logicalPoint)
         {
             IsValid = true;
             EventType = eventType;
             Size = size;
-            Position = position;
+            LogicalPoint = logicalPoint;
         }
 
         /// <summary>
@@ -65,8 +71,11 @@ namespace zForceProxyCSharp
         /// <summary>
         ///     Position of touch in cartesian coordinates
         /// </summary>
-        public readonly Point? Position;
+        public readonly ZPoint? LogicalPoint;
 
+        /// <summary>
+        ///     Returns [Event] Size? Position?
+        /// </summary>
         public override string ToString()
         {
             var sb = new StringBuilder();
@@ -77,9 +86,9 @@ namespace zForceProxyCSharp
                 sb.Append($" Size: {Size?.ToString()}");
             }
 
-            if (Position.HasValue)
+            if (LogicalPoint.HasValue)
             {
-                sb.Append($" Position: {Position?.ToString()}");
+                sb.Append($" Position: {LogicalPoint?.ToString()}");
             }
 
             return sb.ToString();
