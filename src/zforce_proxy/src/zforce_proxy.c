@@ -117,76 +117,76 @@ zforce_error_t zforce_connect(void) {
 }
 
 zforce_error_t zforce_configure(void) {
-    ASSERT(l_state.isInitialized, "Library is not initialized");
-    ASSERT(l_state.isConnected, "Device is not connected");
-    ASSERT(l_state.zConnection, "Missing device connection");
-    ASSERT(l_state.zDevice, "Missing device handle");
+    ASSERT(l_state.isInitialized, "Library is not initialized\n");
+    ASSERT(l_state.isConnected, "Device is not connected\n");
+    ASSERT(l_state.zConnection, "Missing device connection\n");
+    ASSERT(l_state.zDevice, "Missing device handle\n");
 
     // Enable everything except the OS HID touch device mode
     if (!l_state.zDevice->SetOperationModes(
             l_state.zDevice, DetectionMode | SignalsMode | LedLevelsMode | DetectionHidMode | GesturesMode,
             DetectionMode)) {
-        LOG_ERROR("SetOperationModes error (%d) %s", zForceErrno, ErrorString(zForceErrno));
+        LOG_ERROR("SetOperationModes error (%d) %s\n", zForceErrno, ErrorString(zForceErrno));
         return zforce_error_configuration_error;
     }
 
     Message* message = NULL;
     if(!zforce_check_message(TIMEOUT_MS, message)){
-        LOG_ERROR("Timed out setting configuration (SetOperationModes)");
+        LOG_ERROR("Timed out setting configuration (SetOperationModes)\n");
         return zforce_error_timeout;
     }
 
     // Flip the y axis like a sane person
     if(!l_state.zDevice->SetReverseTouchActiveArea(l_state.zDevice, false, true)) {
-        LOG_ERROR("SetReverseTouchActiveArea error (%d) %s", zForceErrno, ErrorString(zForceErrno));
+        LOG_ERROR("SetReverseTouchActiveArea error (%d) %s\n", zForceErrno, ErrorString(zForceErrno));
         return zforce_error_configuration_error;
     }
 
     if(!zforce_check_message(TIMEOUT_MS, message)){
-        LOG_ERROR("Timed out setting configuration (SetReverseTouchActiveArea)");
+        LOG_ERROR("Timed out setting configuration (SetReverseTouchActiveArea)\n");
         return zforce_error_timeout;
     }
 
     return zforce_ok;
 }
 zforce_error_t zforce_process_next_message(zmessage_types_t filter, ztouch_message_t *pMsg) {
-    ASSERT(pMsg, "Received invalid message output handle");
-    ASSERT(l_state.isInitialized, "Library is not initialized");
-    ASSERT(l_state.isConnected, "Device is not connected");
-    ASSERT(l_state.zConnection, "Missing device connection");
-    ASSERT(l_state.zDevice, "Missing device handle");
-    ASSERT(l_state.zPlatform, "Missing platform device");
+    ASSERT(pMsg, "Received invalid message output handle\n");
+    ASSERT(l_state.isInitialized, "Library is not initialized\n");
+    ASSERT(l_state.isConnected, "Device is not connected\n");
+    ASSERT(l_state.zConnection, "Missing device connection\n");
+    ASSERT(l_state.zDevice, "Missing device handle\n");
+    ASSERT(l_state.zPlatform, "Missing platform device\n");
 
     Message *message = l_state.zConnection->DeviceQueue->Dequeue(l_state.zConnection->DeviceQueue, TIMEOUT_MS);
 
     if (message == NULL) {
-        return zforce_ok;
+        return zforce_error_timeout;
     }
 
     DumpMessage(message);
 
     switch (message->MessageType) {
     case EnableMessageType:
-        LOG_INFO("Device enabled, message loop has started");
+        LOG_INFO("Device enabled, message loop has started\n");
         break;
 
     case OperationModesMessageType:
         if (!l_state.zDevice->GetResolution(l_state.zDevice)) {
-            LOG_ERROR("GetResolution error (%d) %s", zForceErrno, ErrorString(zForceErrno));
+            LOG_ERROR("GetResolution error (%d) %s\n", zForceErrno, ErrorString(zForceErrno));
             return zforce_error_message_read;
         }
         break;
 
     case ResolutionMessageType:
         if (!l_state.zPlatform->GetMcuUniqueIdentifier(l_state.zPlatform)) {
-            LOG_ERROR("GetMcuUniqueIdentifier error (%d) %s", zForceErrno, ErrorString(zForceErrno));
+            LOG_ERROR("GetMcuUniqueIdentifier error (%d) %s\n", zForceErrno, ErrorString(zForceErrno));
             return zforce_error_message_read;
         }
         break;
 
     case McuUniqueIdentifierMessageType:
         if (!l_state.zDevice->SetEnable(l_state.zDevice, true, 0)) {
-            LOG_ERROR("SetEnable error (%d) %s", zForceErrno, ErrorString(zForceErrno));
+            LOG_ERROR("SetEnable error (%d) %s\n", zForceErrno, ErrorString(zForceErrno));
             return zforce_error_message_read;
         }
         break;
@@ -243,7 +243,7 @@ void zforce_deinitialize(void) {
 }
 
 void zforce_get_version(int *pVersion) {
-    ASSERT(pVersion, "pVersion is null");
+    ASSERT(pVersion, "pVersion is null\n");
 
     // MSB{ Major, Minor, Patch, Tweak}LSB
     *pVersion = PROJECT_VER_MAJOR << 24 | PROJECT_VER_MINOR << 16 | PROJECT_VER_PATCH << 8 | PROJECT_VER_TWEAK;
@@ -253,7 +253,7 @@ void zforce_get_version(int *pVersion) {
  *-- Static functions
  ********************/
 static zforce_error_t zforce_prepare_connection(proxy_t *pProxy) {
-    ASSERT(pProxy && pProxy->isInitialized, "Library is not initialized. Call zforce_initialize()");
+    ASSERT(pProxy && pProxy->isInitialized, "Library is not initialized. Call zforce_initialize()\n");
 
     if (pProxy->isConnected) {
         return zforce_error_already_connected;
@@ -265,40 +265,40 @@ static zforce_error_t zforce_prepare_connection(proxy_t *pProxy) {
                                                "index=0",
                                                "asn1://", "Streaming");
     if (newConnection == NULL) {
-        LOG_ERROR("Unable to connect: (%d) %s", zForceErrno, ErrorString(zForceErrno));
+        LOG_ERROR("Unable to connect: (%d) %s\n", zForceErrno, ErrorString(zForceErrno));
         return zforce_error_connection_error;
     }
-    LOG_INFO("Connection created");
+    LOG_INFO("Connection created\n");
 
     // Then open the connection
     bool connectionAttemptResult = newConnection->Connect(newConnection);
     if (!connectionAttemptResult) {
-        LOG_ERROR("Unable to connect to device: (%d) %s", zForceErrno, ErrorString(zForceErrno));
+        LOG_ERROR("Unable to connect to device: (%d) %s\n", zForceErrno, ErrorString(zForceErrno));
         return zforce_error_connection_error;
     }
-    LOG_INFO("Connection opened");
+    LOG_INFO("Connection opened\n");
 
     // Wait for Connection response to arrive within 1000 seconds.
     ConnectionMessage *connectionMessage =
         newConnection->ConnectionQueue->Dequeue(newConnection->ConnectionQueue, 1000000);
     if (NULL == connectionMessage) {
-        LOG_ERROR("No Connection Message Received: %s", ErrorString(zForceErrno));
+        LOG_ERROR("No Connection Message Received: %s\n", ErrorString(zForceErrno));
         return zforce_error_connection_error;
     }
-    LOG_INFO("Devices: %d", newConnection->NumberOfDevices);
+    LOG_INFO("Devices: %d\n", newConnection->NumberOfDevices);
 
     // Get the device handle
     PlatformDevice *platformDevice = (PlatformDevice *)newConnection->FindDevice(newConnection, Platform, 0);
     if (NULL == platformDevice) {
-        LOG_ERROR("No Platform device found");
+        LOG_ERROR("No Platform device found\n");
         return zforce_error_connection_error;
     }
-    LOG_INFO("Found platform handle");
+    LOG_INFO("Found platform handle\n");
 
     // Find the first Sensor type device (Core/Air/Plus).
     SensorDevice *sensorDevice = (SensorDevice *)newConnection->FindDevice(newConnection, Sensor, 0);
     if (NULL == sensorDevice) {
-        LOG_ERROR("No Sensor device found");
+        LOG_ERROR("No Sensor device found\n");
         return zforce_error_connection_error;
     }
 
@@ -326,7 +326,7 @@ static zforce_error_t zforce_prepare_connection(proxy_t *pProxy) {
         break;
     }
 
-    LOG_INFO("Found device: %s", deviceTypeString);
+    LOG_INFO("Found device: %s\n", deviceTypeString);
 
     pProxy->zConnection = newConnection;
     pProxy->zDevice = sensorDevice;

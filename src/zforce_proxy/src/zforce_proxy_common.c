@@ -65,20 +65,16 @@ bool logMessage(int level, const char *test, const char *func, const char *file,
     switch (level) {
     case 0:
         if (test == NULL) {
-            formatString = "(%s(%d): Always assert triggered failed -"
-                           "Reason: %s"
-                           "At:     %s)";
+            formatString = "[%s(%d):%s]::Always assert failed>%s";
         } else {
-            formatString = "(%s(%d): Assertion \"%s\" failed -"
-                           "Reason: %s"
-                           "At:     %s )";
+            formatString = "[%s(%d):%s]::Assertion \"%s\" failed>%s";
         }
         break;
     case 1:
-        formatString = COLOR_INFO "%s(%d):%s]:INFO - %s" COLOR_CLEAR;
+        formatString = COLOR_INFO "[%s(%d):%s]::INFO>%s" COLOR_CLEAR;
         break;
     case 2:
-        formatString = COLOR_ERROR "[%s(%d):%s]:ERROR - %s" COLOR_CLEAR;
+        formatString = COLOR_ERROR "[%s(%d):%s]::ERROR>%s" COLOR_CLEAR;
         break;
     }
     if (test == NULL) {
@@ -104,7 +100,7 @@ bool logMessage(int level, const char *test, const char *func, const char *file,
         }
         snprintf(buffer1, len, formatString, file, line, test, func, buffer0);
     }
-    printf("%s\n", buffer1);
+    printf("%s", buffer1);
     if (buffer1 != reserve1)
         free(buffer1);
     if (allocatedBuffer0)

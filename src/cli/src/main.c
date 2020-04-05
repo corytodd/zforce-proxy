@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     int version = 0;
     zforce_get_version(&version);
 
-    LOG_INFO("zForce Proxy Version: %d.%d.%d.%d", (version >> 24) & 0xFF, (version >> 16) & 0xFF, (version >> 8) & 0xFF,
+    LOG_INFO("zForce Proxy Version: %d.%d.%d.%d\n", (version >> 24) & 0xFF, (version >> 16) & 0xFF, (version >> 8) & 0xFF,
              version & 0xFF);
 
     // Install the Control-C handler.
@@ -67,26 +67,26 @@ int main(int argc, char **argv) {
 
         case state_startup:
             // Configure cli
-            LOG_INFO("Starting up...");
+            LOG_INFO("Starting up...\n");
             ret = zforce_initialize();
             l_cli.state = ret == zforce_ok ? state_init : state_error;
             break;
 
         case state_init:
             // Configure library
-            LOG_INFO("Entering initialization state...");
+            LOG_INFO("Entering initialization state...\n");
             ret = zforce_connect();
             l_cli.state = ret == zforce_ok ? state_config : state_error;
             break;
 
         case state_config:
             // Configure connection and device
-            LOG_INFO("Entering configuration state...");
+            LOG_INFO("Entering configuration state...\n");
             ret = zforce_configure();
 
             if (ret == zforce_ok) {
                 l_cli.state = state_idle;
-                LOG_INFO("Starting message processing loop");
+                LOG_INFO("Starting message processing loop\n");
             } else {
                 l_cli.state = state_error;
             }
@@ -95,24 +95,26 @@ int main(int argc, char **argv) {
         case state_idle:
             // Process message loop
             ret = zforce_process_next_message(zmessage_touch, &message);
-            if (ret != zforce_ok) {
-                LOG_INFO("Failed to read message");
+            if (ret == zforce_error_timeout) {
+                // Nothing to do
+            } else if(ret != zforce_ok) {
+                LOG_INFO("Timed out reading message\n");
             }
             break;
 
         case state_error:
-            LOG_ERROR("An error condition was triggered.");
+            LOG_ERROR("An error condition was triggered.\n");
             l_cli.return_code = -1;
             l_cli.state = state_shutdown;
             break;
 
         case state_abort:
-            LOG_ERROR("Receives abort signal");
+            LOG_ERROR("Receives abort signal\n");
             l_cli.return_code = -1;
             l_cli.state = state_shutdown;
 
         case state_shutdown:
-            LOG_INFO("De-initializing...");
+            LOG_INFO("De-initializing...\n");
             zforce_deinitialize();
             l_cli.state = state_end;
             break;
@@ -122,7 +124,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    LOG_INFO("Shutdown complete.");
+    LOG_INFO("Shutdown complete.\n");
 
     return l_cli.return_code;
 }
