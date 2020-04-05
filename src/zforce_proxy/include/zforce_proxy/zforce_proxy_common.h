@@ -39,7 +39,7 @@
 #define ALWAYS_ASSERT(...) ((void)0)
 #else
 
-#define STRINGIFY(x) #x
+#define UNUSED(x) (void)(x)
 
 #define LOG_LEVEL_ASSERT (0)
 #define LOG_LEVEL_INFO (1)
@@ -69,3 +69,13 @@ bool logMessage(int level, const char *test, const char *func, const char *file,
 #define LOG_INFO(...) ((void)0)
 #define LOG_ERROR(...) ((void)0)
 #endif
+
+#if defined(_MSC_VER)
+#define ALIGNED_(x) __declspec(align(x))
+#else
+#if defined(__GNUC__)
+#define ALIGNED_(x) __attribute__ ((aligned(x)))
+#endif
+#endif
+
+#define ALIGNED_TYPE(t,x) typedef t ALIGNED_(x)

@@ -25,8 +25,9 @@ typedef enum {
     state_config,   ///< Application is configuring
     state_idle,     ///< Application is idle
     state_shutdown, ///< Application is shutting down
-    state_stopped,  ///< Application is stopped
-    state_error     ///< A stopped error state
+    state_abort,    ///< Application is aborting
+    state_error,    ///< A stopped error state
+    state_end       ///< Termination state
 } state_t;
 
 typedef struct {
@@ -59,8 +60,9 @@ int main(int argc, char **argv) {
     signal(SIGINT, cli_signal_handler);
 
     zforce_error_t ret;
+    ztouch_message_t message;
 
-    while (l_cli.state != state_stopped) {
+    while (l_cli.state != state_end) {
         switch (l_cli.state) {
 
         case state_startup:
@@ -92,20 +94,27 @@ int main(int argc, char **argv) {
 
         case state_idle:
             // Process message loop
-            ret = zforce_process_next_message();
-            l_cli.state = ret == zforce_ok ? state_idle : state_error;
-            break;
-
-        case state_shutdown:
-            LOG_INFO("Shutting down...");
-            zforce_deinitialize();
-            l_cli.state = state_stopped;
+            ret = zforce_process_next_message(zmessage_touch, &message);
+            if (ret != zforce_ok) {
+                LOG_INFO("Failed to read message");
+            }
             break;
 
         case state_error:
             LOG_ERROR("An error condition was triggered.");
             l_cli.return_code = -1;
             l_cli.state = state_shutdown;
+            break;
+
+        case state_abort:
+            LOG_ERROR("Receives abort signal");
+            l_cli.return_code = -1;
+            l_cli.state = state_shutdown;
+
+        case state_shutdown:
+            LOG_INFO("De-initializing...");
+            zforce_deinitialize();
+            l_cli.state = state_end;
             break;
 
         default:
@@ -119,7 +128,6 @@ int main(int argc, char **argv) {
 }
 
 static void cli_signal_handler(int sig) {
-    (void)sig;
-    l_cli.state = state_shutdown;
-    exit(-1);
+    UNUSED(sig);
+    l_cli.state = state_abort;
 }

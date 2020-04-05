@@ -70,6 +70,19 @@ static proxy_t l_state = {0};
  */
 static zforce_prepare_connection(proxy_t *pProxy);
 
+/**
+ * @briefs Check for and await message from device
+ * @details
+ * Wait up to this many milliseconds before giving up
+ *
+ * @param[in] wait wait time in milliseconds, -1 to wait forever
+ * @param[out] pMsg receives message
+ *
+ * @retval true message received
+ * @retval false message not received
+ */
+static bool zforce_check_message(int wait, Message* pMsg);
+
 /********************
  *-- Global functions
  ********************/
@@ -109,6 +122,7 @@ zforce_error_t zforce_configure(void) {
     ASSERT(l_state.zConnection, "Missing device connection");
     ASSERT(l_state.zDevice, "Missing device handle");
 
+    // Enable everything except the OS HID touch device mode
     if (!l_state.zDevice->SetOperationModes(
             l_state.zDevice, DetectionMode | SignalsMode | LedLevelsMode | DetectionHidMode | GesturesMode,
             DetectionMode)) {
@@ -116,10 +130,27 @@ zforce_error_t zforce_configure(void) {
         return zforce_error_configuration_error;
     }
 
+    Message* message = NULL;
+    if(!zforce_check_message(TIMEOUT_MS, message)){
+        LOG_ERROR("Timed out setting configuration (SetOperationModes)");
+        return zforce_error_timeout;
+    }
+
+    // Flip the y axis like a sane person
+    if(!l_state.zDevice->SetReverseTouchActiveArea(l_state.zDevice, false, true)) {
+        LOG_ERROR("SetReverseTouchActiveArea error (%d) %s", zForceErrno, ErrorString(zForceErrno));
+        return zforce_error_configuration_error;
+    }
+
+    if(!zforce_check_message(TIMEOUT_MS, message)){
+        LOG_ERROR("Timed out setting configuration (SetReverseTouchActiveArea)");
+        return zforce_error_timeout;
+    }
+
     return zforce_ok;
 }
-
-zforce_error_t zforce_process_next_message(void) {
+zforce_error_t zforce_process_next_message(zmessage_types_t filter, ztouch_message_t *pMsg) {
+    ASSERT(pMsg, "Received invalid message output handle");
     ASSERT(l_state.isInitialized, "Library is not initialized");
     ASSERT(l_state.isConnected, "Device is not connected");
     ASSERT(l_state.zConnection, "Missing device connection");
@@ -136,7 +167,7 @@ zforce_error_t zforce_process_next_message(void) {
 
     switch (message->MessageType) {
     case EnableMessageType:
-        /* We are enabled and can now receive notifications */
+        LOG_INFO("Device enabled, message loop has started");
         break;
 
     case OperationModesMessageType:
@@ -159,6 +190,28 @@ zforce_error_t zforce_process_next_message(void) {
             return zforce_error_message_read;
         }
         break;
+
+    case TouchMessageType:
+        if((filter & zmessage_touch) == zmessage_touch) {
+            TouchMessage *pTouch = (TouchMessage *)message;
+
+            pMsg->event = (zevent_t)pTouch->Event;
+            pMsg->hasSizeX = pTouch->HasSizeX;
+            pMsg->hasSizeY = pTouch->HasSizeY;
+            pMsg->hasSizeZ = pTouch->HasSizeZ;
+            pMsg->sizeX = pTouch->SizeX;
+            pMsg->sizeY = pTouch->SizeY;
+            pMsg->sizeZ = pTouch->SizeZ;
+
+            pMsg->hasX = pTouch->HasX;
+            pMsg->hasY = pTouch->HasY;
+            pMsg->hasZ = pTouch->HasZ;
+            pMsg->X = pTouch->X;
+            pMsg->Y = pTouch->Y;
+            pMsg->Z = pTouch->Z;
+        }
+        break;
+
     default:
         /* Do nothing */
         break;
@@ -280,4 +333,9 @@ static zforce_error_t zforce_prepare_connection(proxy_t *pProxy) {
     pProxy->zPlatform = platformDevice;
 
     return zforce_ok;
+}
+
+static bool zforce_check_message(int wait, Message* pMsg) {
+    pMsg = l_state.zConnection->DeviceQueue->Dequeue(l_state.zConnection->DeviceQueue, wait);
+    return pMsg != NULL;
 }
