@@ -8,25 +8,28 @@
         <Copyright>Ardonyx LLC @ 2020</Copyright>
         <RuntimeIdentifiers>win10-x64;linux-x64</RuntimeIdentifiers>
     </PropertyGroup>
-
+    
     <ItemGroup>
         <Content Include="runtimes/win-x64/native/zForce.dll">
             <PackagePath>runtimes/win-x64/native/zForce.dll</PackagePath>
             <Pack>true</Pack>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Visible>false</Visible>
+            <Link>zForce.dll</Link>
         </Content>
         <Content Include="runtimes/win-x64/native/zforce_proxy.dll">
             <PackagePath>runtimes/win-x64/native/zforce_proxy.dll</PackagePath>
             <Pack>true</Pack>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Visible>false</Visible>
+            <Link>zforce_proxy.dll</Link>
         </Content>
         <Content Include="runtimes/linux-x64/native/libzForce.so">
             <PackagePath>runtimes/linux-x64/native/libzForce.so</PackagePath>
             <Pack>true</Pack>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Visible>false</Visible>
+            <Link>libzForce.so</Link>
         </Content>
     </ItemGroup>
 </Project>
