@@ -1,12 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <SemVer>1.0.1.0</SemVer>
+        <Suffix/>
+        <LangVersion>latest</LangVersion>
+        <Year>2020</Year>
+    </PropertyGroup>
+
+
+    <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Title>zForce C# Bindings</Title>
         <Authors>Ardonyx LLC</Authors>
-        <Copyright>Ardonyx LLC @ 2020</Copyright>
+        <Copyright> $(Year) Ardonyx LLC</Copyright>
         <RuntimeIdentifiers>win10-x64;linux-x64</RuntimeIdentifiers>
+        <Version>$(SemVer)$(Suffix)</Version>
+        <AssemblyVersion>$(SemVer)</AssemblyVersion>
+        <FileVersion>$(SemVer)</FileVersion>
+        <IncludeSource>true</IncludeSource>
+        <IncludeSymbols>true</IncludeSymbols>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
     
     <ItemGroup>
