@@ -2,6 +2,25 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Title>zForce C# Bindings</Title>
+        <Authors>Ardonyx LLC</Authors>
+        <Copyright>Ardonyx LLC @ 2020</Copyright>
+        <RuntimeIdentifiers>win10-x64;linux-x64</RuntimeIdentifiers>
     </PropertyGroup>
 
+    <ItemGroup>
+        <Content Include="runtimes/win-x64/native/zForce.dll">
+            <PackagePath>runtimes/win-x64/native/zForce.dll</PackagePath>
+            <Pack>true</Pack>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="runtimes/linux-x64/native/libzForce.so">
+            <PackagePath>runtimes/linux-x64/native/libzForce.so</PackagePath>
+            <Pack>true</Pack>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+    </ItemGroup>
 </Project>
