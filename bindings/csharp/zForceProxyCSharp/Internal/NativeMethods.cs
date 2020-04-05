@@ -8,22 +8,18 @@ namespace zForceProxyCSharp.Internal
     /// </summary>
     internal static class NativeMethods
     {
-        private const string DllName =
-#if DEBUG
-            "zforce_proxyd";
-#else
-            "zforce_proxy";
-#endif
+        private const string DllName = "zforce_proxy";
+        
         [DllImport(DllName, CharSet = CharSet.Auto)]
         private static extern int zforce_initialize();
 
         /// <summary>
         ///     Initialize this library
         /// </summary>
-        public static ZForceCode Initialize()
+        public static ZForceReturnCode Initialize()
         {
             var ret = zforce_initialize();
-            return (ZForceCode) ret;
+            return (ZForceReturnCode) ret;
         }
 
         [DllImport(DllName, CharSet = CharSet.Auto)]
@@ -32,10 +28,10 @@ namespace zForceProxyCSharp.Internal
         /// <summary>
         ///     Create a new connection
         /// </summary>
-        public static ZForceCode Connect()
+        public static ZForceReturnCode Connect()
         {
             var ret = zforce_connect();
-            return (ZForceCode) ret;
+            return (ZForceReturnCode) ret;
         }
 
         [DllImport(DllName, CharSet = CharSet.Auto)]
@@ -45,10 +41,10 @@ namespace zForceProxyCSharp.Internal
         ///     Configure the current connection
         /// </summary>
         /// <returns></returns>
-        public static ZForceCode Configure()
+        public static ZForceReturnCode Configure()
         {
             var ret = zforce_configure();
-            return (ZForceCode) ret;
+            return (ZForceReturnCode) ret;
         }
 
         [DllImport(DllName, CallingConvention = CallingConvention.StdCall)]
@@ -61,9 +57,10 @@ namespace zForceProxyCSharp.Internal
         public static TouchEvent ProcessNextMessage()
         {
             var touchEvent = new ZTouchEvent();
-            var ret = (ZForceCode) zforce_process_next_message(int.MaxValue, ref touchEvent);
+            var ret = (ZForceReturnCode) zforce_process_next_message(int.MaxValue, ref touchEvent);
 
-            if (ret != ZForceCode.Ok)
+            // The default instance has the IsValid field set to false
+            if (ret != ZForceReturnCode.Ok)
             {
                 return default;
             }
@@ -102,20 +99,6 @@ namespace zForceProxyCSharp.Internal
             return new ZForceVersion(version);
         }
 
-        /// <summary>
-        ///     zForce proxy library return codes
-        /// </summary>
-        internal enum ZForceCode
-        {
-            Ok,
-            InitFailed,
-            AlreadyConnected,
-            ConnectionError,
-            ConfigurationError,
-            MessageReadError,
-            NoMessage,
-            OperationTimeout
-        }
 
 
         [StructLayout(LayoutKind.Sequential, Pack = 2)]

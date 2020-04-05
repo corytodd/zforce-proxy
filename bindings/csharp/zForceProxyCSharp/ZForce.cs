@@ -42,16 +42,18 @@
         ///     Start the zForce device connection
         /// </summary>
         /// <returns>Task on success, null on failure</returns>
-        public Task StartDevice(MessageReceived callback)
+        public Task<ZForceReturnCode> StartDevice(MessageReceived callback)
         {
-            if (NativeMethods.Connect() != NativeMethods.ZForceCode.Ok)
+            var ret = NativeMethods.Connect();
+            if (ret!= ZForceReturnCode.Ok)
             {
-                return default;
+                return Task.FromResult(ret);
             }
-
-            if (NativeMethods.Configure() != NativeMethods.ZForceCode.Ok)
+            
+            ret = NativeMethods.Configure();
+            if (ret!= ZForceReturnCode.Ok)
             {
-                return default;
+                return Task.FromResult(ret);
             }
 
             return Task.Run(() => MessageLoop(callback));
@@ -60,7 +62,7 @@
         /// <summary>
         ///     Read and process messages forever
         /// </summary>
-        private void MessageLoop(MessageReceived callback)
+        private ZForceReturnCode MessageLoop(MessageReceived callback)
         {
             _running = true;
             while (_running)
@@ -71,6 +73,8 @@
                     callback?.Invoke(touchEvent);
                 }
             }
+
+            return ZForceReturnCode.Ok;
         }
     }
 }

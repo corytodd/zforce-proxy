@@ -2,12 +2,13 @@
 {
     using System;
     using System.Threading;
+    using System.Threading.Tasks;
 
     internal static class Program
     {
         private static readonly CancellationTokenSource TokenSource = new CancellationTokenSource();
 
-        private static void Main(string[] args)
+        private static async Task Main(string[] args)
         {
             // Capture ctrl+c to stop process
             ConsoleInterrupt.SetConsoleCtrlHandler(ConsoleHandler, true);
@@ -18,24 +19,22 @@
             // Run device poll as a task
             var messageLoop = ZForce.Instance.StartDevice(m => { Console.WriteLine(m); });
 
-            // If connection fails, no task is returned
-            if (messageLoop == null)
+
+            // Run the task until user uses ctrl+c to abort
+            try
             {
-                Console.WriteLine("Failed to start device");
-                TokenSource.Cancel();
-            }
-            else
-            {
-                // Run the task until user uses ctrl+c to abort
-                try
+                var ret = await messageLoop;
+                if (ret != ZForceReturnCode.Ok)
                 {
-                    messageLoop.Wait(TokenSource.Token);
-                }
-                catch (OperationCanceledException)
-                {
-                    Console.WriteLine("Shutting down");
+                    Console.WriteLine($"Error: {ret.ToString()}");
                 }
             }
+            catch (OperationCanceledException)
+            {
+                // Nothing to do
+            }
+            
+            Console.WriteLine("Shutting down");
         }
 
         /// <summary>
