@@ -97,10 +97,10 @@ int main(int argc, char **argv) {
         case state_idle:
             // Process message loop
             ret = zforce_process_next_message(zmessage_touch, &message);
-            if (ret == zforce_error_timeout) {
+            if (ret == zforce_error_timeout || ret == zforce_no_message) {
                 // Nothing to do
             } else if(ret != zforce_ok) {
-                LOG_INFO("Timed out reading message\n");
+                LOG_INFO("Error out reading message: (%d)\n", (int)ret);
             }
             break;
 
