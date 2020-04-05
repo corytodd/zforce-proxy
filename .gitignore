@@ -4,3 +4,4 @@
 /bindings/**/obj/**
 /bindings/**/bin/**
 *.sln.DotSettings.user
+/bindings/csharp/build/
