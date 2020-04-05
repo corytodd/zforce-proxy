@@ -41,17 +41,17 @@
         /// <summary>
         ///     Start the zForce device connection
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Task on success, null on failure</returns>
         public Task StartDevice(OnMessageReceived callback)
         {
             if (NativeMethods.Connect() != NativeMethods.ZForceCode.Ok)
             {
-                return null;
+                return default;
             }
 
             if (NativeMethods.Configure() != NativeMethods.ZForceCode.Ok)
             {
-                return null;
+                return default;
             }
 
             return Task.Run(() => MessageLoop(callback));
