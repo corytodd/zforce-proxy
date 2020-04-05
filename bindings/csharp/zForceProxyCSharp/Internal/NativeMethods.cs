@@ -1,6 +1,5 @@
 namespace zForceProxyCSharp.Internal
 {
-    using System;
     using System.Drawing;
     using System.Runtime.InteropServices;
 
@@ -62,8 +61,9 @@ namespace zForceProxyCSharp.Internal
         public static TouchEvent ProcessNextMessage()
         {
             var touchEvent = new ZTouchEvent();
-            var ret = zforce_process_next_message(int.MaxValue,  ref touchEvent);
-            if (ret != 0)
+            var ret = (ZForceCode) zforce_process_next_message(int.MaxValue, ref touchEvent);
+
+            if (ret != ZForceCode.Ok)
             {
                 return default;
             }
@@ -79,7 +79,7 @@ namespace zForceProxyCSharp.Internal
             {
                 position = new Point((int) touchEvent.X, (int) touchEvent.Y);
             }
-            
+
             return new TouchEvent(touchEvent.eventType, size, position);
         }
 
@@ -112,9 +112,11 @@ namespace zForceProxyCSharp.Internal
             AlreadyConnected,
             ConnectionError,
             ConfigurationError,
-            MessageReadError
+            MessageReadError,
+            NoMessage,
+            OperationTimeout
         }
-        
+
 
         [StructLayout(LayoutKind.Sequential, Pack = 2)]
         private struct ZTouchEvent
@@ -123,77 +125,77 @@ namespace zForceProxyCSharp.Internal
             ///     True if X has a value
             /// </summary>
             [MarshalAs(UnmanagedType.I1)]
-            public bool hasX;
+            public readonly bool hasX;
 
             /// <summary>
             ///     True if sizeX has a value
             /// </summary>
             [MarshalAs(UnmanagedType.I1)]
-            public bool hasSizeX;
+            public readonly bool hasSizeX;
 
             /// <summary>
             ///     True if Y has a value
             /// </summary>
             [MarshalAs(UnmanagedType.I1)]
-            public bool hasY;
+            public readonly bool hasY;
 
             /// <summary>
             ///     True if sizeY has a value
             /// </summary>
             [MarshalAs(UnmanagedType.I1)]
-            public bool hasSizeY;
+            public readonly bool hasSizeY;
 
             /// <summary>
             ///     True if Z has a value
             /// </summary>
             [MarshalAs(UnmanagedType.I1)]
-            public bool hasZ;
+            public readonly bool hasZ;
 
             /// <summary>
             ///     True if sizeZ has a value
             /// </summary>
             [MarshalAs(UnmanagedType.I1)]
-            private bool hasSizeZ;
+            private readonly bool hasSizeZ;
 
             /// <summary>
             ///     Type of touch event
             /// </summary>
-            public ZEventType eventType;
+            public readonly ZEventType eventType;
 
             /// <summary>
             ///     Id of this event
             /// </summary>
-            public uint id;
+            public readonly uint id;
 
             /// <summary>
             ///     Size of X touch
             /// </summary>
-            public uint sizeX;
+            public readonly uint sizeX;
 
             /// <summary>
             ///     Size of Y touch
             /// </summary>
-            public uint sizeY;
+            public readonly uint sizeY;
 
             /// <summary>
             ///     Size of Z touch
             /// </summary>
-            public uint sizeZ;
+            public readonly uint sizeZ;
 
             /// <summary>
             ///     X coordinate
             /// </summary>
-            public uint X;
+            public readonly uint X;
 
             /// <summary>
             ///     Y coordinate
             /// </summary>
-            public uint Y;
+            public readonly uint Y;
 
             /// <summary>
             ///     Z coordinate
             /// </summary>
-            public uint Z;
+            public readonly uint Z;
         }
     }
 }

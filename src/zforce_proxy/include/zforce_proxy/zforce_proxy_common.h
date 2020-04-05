@@ -26,6 +26,8 @@
     #error Unsupported compiler.
 #endif // _WIN32
 
+#define UNUSED(x) (void)(x)
+
 // Helper macro to force the debugger to break at this location.
 #if defined(WIN32) && !defined(__MINGW32__)
 #define DEBUG_BREAK __debugbreak()
@@ -38,8 +40,6 @@
 #define ASSERT(x, ...) ((void)0)
 #define ALWAYS_ASSERT(...) ((void)0)
 #else
-
-#define UNUSED(x) (void)(x)
 
 #define LOG_LEVEL_ASSERT (0)
 #define LOG_LEVEL_INFO (1)
@@ -77,5 +77,3 @@ bool logMessage(int level, const char *test, const char *func, const char *file,
 #define ALIGNED_(x) __attribute__ ((aligned(x)))
 #endif
 #endif
-
-#define ALIGNED_TYPE(t,x) typedef t ALIGNED_(x)

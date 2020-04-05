@@ -46,7 +46,7 @@ set(ZFORCE_SDK ${CMAKE_SOURCE_DIR}/ext/zForceSDK)
 find_package(zForce REQUIRED IMPORTED)
 
 # Binary --------------------------------------------------------------------
-add_library(${LIBRARY_TARGET_NAME}
+add_library(${LIBRARY_TARGET_NAME} SHARED
         ${${LIBRARY_TARGET_NAME}_SRC}
         ${${LIBRARY_TARGET_NAME}_HDR_PUBLIC}
         ${${LIBRARY_TARGET_NAME}_HDR_PRIVATE}

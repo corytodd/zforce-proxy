@@ -19,7 +19,8 @@ typedef enum {
     zforce_error_connection_error,    ///< Failed to connect, see error code for more details
     zforce_error_configuration_error, ///< Failed to configure, see error code for more details
     zforce_error_message_read,        ///< Error reading message
-    zforce_error_timeout,             ///< Timed out setting configuration
+    zforce_no_message,                ///< Timed out setting configuration
+    zforce_error_timeout,             ///< Operation timed out
 } zforce_error_t;
 
 /**
@@ -91,6 +92,7 @@ zforce_error_t zforce_configure(void);
  * @param[in] filter report messages only of this type
  * @param[out] pMsg receives message
  * @retval zforce_ok message read and printed okay
+ * @retval zforce_no_message no message available
  */
 zforce_error_t zforce_process_next_message(zmessage_types_t filter, ztouch_message_t *pMsg);
 

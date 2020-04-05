@@ -7,6 +7,7 @@
 #else
 #include <unistd.h>
 #endif // _WIN32
+
 #include <errno.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -15,6 +16,7 @@
 #include <stdlib.h>
 
 #include <zforce_proxy/zforce_proxy.h>
+#include <zforce_proxy/zforce_proxy_common.h>
 
 /**
  * @brief CLI run states

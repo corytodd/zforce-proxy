@@ -1,7 +1,7 @@
 namespace zForceProxyCSharp
 {
     using System.Drawing;
-    using System.Numerics;
+    using System.Text;
 
     /// <summary>
     ///     Touch event types
@@ -35,7 +35,7 @@ namespace zForceProxyCSharp
     }
 
     /// <summary>
-    /// 2D touch event (Z is not handled)
+    ///     2D touch event (Z is not handled)
     /// </summary>
     public readonly struct TouchEvent
     {
@@ -48,28 +48,41 @@ namespace zForceProxyCSharp
         }
 
         /// <summary>
-        /// Returns true if object is valid
+        ///     Returns true if object is valid
         /// </summary>
         public readonly bool IsValid;
 
         /// <summary>
-        /// Original event type
+        ///     Original event type
         /// </summary>
         public readonly ZEventType EventType;
 
         /// <summary>
-        /// Size of touch event (covered pixels)
+        ///     Size of touch event (covered pixels)
         /// </summary>
         public readonly Size? Size;
 
         /// <summary>
-        /// Position of touch in cartesian coordinates
+        ///     Position of touch in cartesian coordinates
         /// </summary>
         public readonly Point? Position;
 
         public override string ToString()
         {
-            return $"{EventType.ToString()} Size: {Size?.ToString()} Position: {Position?.ToString()}";
+            var sb = new StringBuilder();
+            sb.Append("[{EventType.ToString()}]");
+
+            if (Size.HasValue)
+            {
+                sb.Append($" Size: {Size?.ToString()}");
+            }
+
+            if (Position.HasValue)
+            {
+                sb.Append($" Position: {Position?.ToString()}");
+            }
+
+            return sb.ToString();
         }
     }
 }

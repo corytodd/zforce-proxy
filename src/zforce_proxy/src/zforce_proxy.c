@@ -160,7 +160,7 @@ zforce_error_t zforce_process_next_message(zmessage_types_t filter, ztouch_messa
     Message *message = l_state.zConnection->DeviceQueue->Dequeue(l_state.zConnection->DeviceQueue, TIMEOUT_MS);
 
     if (message == NULL) {
-        return zforce_error_timeout;
+        return zforce_no_message;
     }
 
     DumpMessage(message);

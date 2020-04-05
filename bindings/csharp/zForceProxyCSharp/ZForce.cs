@@ -29,7 +29,7 @@
         /// Called when a touch event is received
         /// </summary>
         /// <param name="touchEvent">Received event</param>
-        public delegate void OnMessageReceived(TouchEvent touchEvent);
+        public delegate void MessageReceived(TouchEvent touchEvent);
 
         /// <inheritdoc />
         public void Dispose()
@@ -42,7 +42,7 @@
         ///     Start the zForce device connection
         /// </summary>
         /// <returns>Task on success, null on failure</returns>
-        public Task StartDevice(OnMessageReceived callback)
+        public Task StartDevice(MessageReceived callback)
         {
             if (NativeMethods.Connect() != NativeMethods.ZForceCode.Ok)
             {
@@ -60,17 +60,13 @@
         /// <summary>
         ///     Read and process messages forever
         /// </summary>
-        private void MessageLoop(OnMessageReceived callback)
+        private void MessageLoop(MessageReceived callback)
         {
             _running = true;
             while (_running)
             {
                 var touchEvent = NativeMethods.ProcessNextMessage();
-                if (!touchEvent.IsValid)
-                {
-                    _running = false;   
-                }
-                else
+                if (touchEvent.IsValid)
                 {
                     callback?.Invoke(touchEvent);
                 }
