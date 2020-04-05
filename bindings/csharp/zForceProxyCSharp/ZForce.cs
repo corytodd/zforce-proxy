@@ -4,8 +4,17 @@
     using System.Threading.Tasks;
     using Internal;
 
+    /// <summary>
+    ///     zForce sensor device
+    /// </summary>
     public sealed class ZForce : IDisposable
     {
+        /// <summary>
+        ///     Called when a touch event is received
+        /// </summary>
+        /// <param name="touchEvent">Received event</param>
+        public delegate void MessageReceived(TouchEvent touchEvent);
+
         private static readonly Lazy<ZForce> Lazy = new Lazy<ZForce>(() => new ZForce());
 
         private bool _running;
@@ -25,12 +34,6 @@
         /// </summary>
         public ZForceVersion Version => NativeMethods.GetVersion();
 
-        /// <summary>
-        /// Called when a touch event is received
-        /// </summary>
-        /// <param name="touchEvent">Received event</param>
-        public delegate void MessageReceived(TouchEvent touchEvent);
-
         /// <inheritdoc />
         public void Dispose()
         {
@@ -45,13 +48,13 @@
         public Task<ZForceReturnCode> StartDevice(MessageReceived callback)
         {
             var ret = NativeMethods.Connect();
-            if (ret!= ZForceReturnCode.Ok)
+            if (ret != ZForceReturnCode.Ok)
             {
                 return Task.FromResult(ret);
             }
-            
+
             ret = NativeMethods.Configure();
-            if (ret!= ZForceReturnCode.Ok)
+            if (ret != ZForceReturnCode.Ok)
             {
                 return Task.FromResult(ret);
             }

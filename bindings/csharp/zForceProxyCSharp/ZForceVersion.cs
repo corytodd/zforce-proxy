@@ -37,6 +37,9 @@ namespace zForceProxyCSharp
         /// </summary>
         private readonly int _tweak;
 
+        /// <summary>
+        ///     Return Major.Minor.Patch.Tweak
+        /// </summary>
         public override string ToString()
         {
             return $"{_major}.{_minor}.{_patch}.{_tweak}";
