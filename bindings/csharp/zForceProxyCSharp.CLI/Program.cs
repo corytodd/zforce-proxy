@@ -8,7 +8,10 @@ namespace zForceProxyCSharp.CLI
         {
             Console.WriteLine($"Using zForceProxy v: {ZForce.Instance.Version}");
 
-            var messageLoop = ZForce.Instance.StartDevice();
+            var messageLoop = ZForce.Instance.StartDevice((m) =>
+            {
+                Console.WriteLine(m);
+            });
 
             messageLoop.Wait();
         }
