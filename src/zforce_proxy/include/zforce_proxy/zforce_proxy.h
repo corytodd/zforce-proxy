@@ -47,20 +47,16 @@ typedef enum {
  */
 #pragma pack(push, 2)
 typedef struct {
-    bool hasX;      ///< Is set to true if the coordinate system has a X axis.
-    bool hasSizeX;  ///< True if sizeX has a value
-    bool hasY;      ///< Is set to true if the coordinate system has a Y axis.
-    bool hasSizeY;  ///< True if sizeY has a value
-    bool hasZ;      ///< Is set to true if the coordinate system has a Z axis.
-    bool hasSizeZ;  ///< True if sizeZ has a value
-    zevent_t event; ///< Event type
-    uint32_t id;    ///< Id of this message
-    uint32_t sizeX; ///< Size of touch along X axis
-    uint32_t sizeY; ///< Size of touch along Y axis
-    uint32_t sizeZ; ///< Size of touch along Z axis
-    uint32_t X;     ///< X axis value.
-    uint32_t Y;     ///< Y axis value.
-    uint32_t Z;     ///< Z axis value.
+    bool hasPosition; ///< True if a complete position is available
+    bool hasSize;     ///< True is a complete size is available
+    zevent_t event;   ///< Event type
+    uint32_t id;      ///< Id of this message
+    uint32_t sizeX;   ///< Size of touch along X axis
+    uint32_t sizeY;   ///< Size of touch along Y axis
+    uint32_t sizeZ;   ///< Size of touch along Z axis
+    float posX;       ///< X logical axis value, [0,1]
+    float posY;       ///< Y logical axis value, [0,1]
+    float posZ;       ///< Z logical axis value, [0,1]
 } ztouch_message_t;
 #pragma pack(pop)
 

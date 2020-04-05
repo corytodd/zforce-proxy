@@ -47,6 +47,9 @@
 typedef struct {
     bool isInitialized;        ///< Global library initialization flag
     bool isConnected;          ///< Global connection state flag
+    bool hasResolution;        ///< True if resolution information is known
+    uint32_t resolutionX;      ///< Pixel width
+    uint32_t resolutionY;      ///< Pixel height
     Connection *zConnection;   ///< Device connection handle
     SensorDevice *zDevice;     ///< Device connection handle
     PlatformDevice *zPlatform; ///< Platform handle
@@ -71,17 +74,25 @@ static proxy_t l_state = {0};
 static zforce_prepare_connection(proxy_t *pProxy);
 
 /**
- * @briefs Check for and await message from device
+ * @brief Check for and await message from device
  * @details
  * Wait up to this many milliseconds before giving up
  *
  * @param[in] wait wait time in milliseconds, -1 to wait forever
- * @param[out] pMsg receives message
+ * @param[out] ppMsg receives message
  *
  * @retval true message received
  * @retval false message not received
  */
-static bool zforce_check_message(int wait, Message* pMsg);
+static bool zforce_check_message(int wait, Message **ppMsg);
+
+/**
+ * @brief Read the device resolution and store in proxy_t
+ *
+ * @param[out] pProxy receives resolution information
+ * @return true on success
+ */
+static bool zforce_get_resolution(proxy_t *pProxy);
 
 /********************
  *-- Global functions
@@ -130,21 +141,25 @@ zforce_error_t zforce_configure(void) {
         return zforce_error_configuration_error;
     }
 
-    Message* message = NULL;
-    if(!zforce_check_message(TIMEOUT_MS, message)){
+    Message *message = NULL;
+    if (!zforce_check_message(TIMEOUT_MS, &message)) {
         LOG_ERROR("Timed out setting configuration (SetOperationModes)\n");
         return zforce_error_timeout;
     }
 
     // Flip the y axis like a sane person
-    if(!l_state.zDevice->SetReverseTouchActiveArea(l_state.zDevice, false, true)) {
+    if (!l_state.zDevice->SetReverseTouchActiveArea(l_state.zDevice, false, true)) {
         LOG_ERROR("SetReverseTouchActiveArea error (%d) %s\n", zForceErrno, ErrorString(zForceErrno));
         return zforce_error_configuration_error;
     }
 
-    if(!zforce_check_message(TIMEOUT_MS, message)){
+    if (!zforce_check_message(TIMEOUT_MS, &message)) {
         LOG_ERROR("Timed out setting configuration (SetReverseTouchActiveArea)\n");
         return zforce_error_timeout;
+    }
+
+    if (!zforce_get_resolution(&l_state)) {
+        return zforce_error_configuration_error;
     }
 
     return zforce_ok;
@@ -163,7 +178,10 @@ zforce_error_t zforce_process_next_message(zmessage_types_t filter, ztouch_messa
         return zforce_no_message;
     }
 
+    // Skip the unpacking and dumping is logging is not enable
+#if ENABLE_LOGGING
     DumpMessage(message);
+#endif
 
     switch (message->MessageType) {
     case EnableMessageType:
@@ -192,23 +210,30 @@ zforce_error_t zforce_process_next_message(zmessage_types_t filter, ztouch_messa
         break;
 
     case TouchMessageType:
-        if((filter & zmessage_touch) == zmessage_touch) {
+        if ((filter & zmessage_touch) == zmessage_touch) {
             TouchMessage *pTouch = (TouchMessage *)message;
 
             pMsg->event = (zevent_t)pTouch->Event;
-            pMsg->hasSizeX = pTouch->HasSizeX;
-            pMsg->hasSizeY = pTouch->HasSizeY;
-            pMsg->hasSizeZ = pTouch->HasSizeZ;
-            pMsg->sizeX = pTouch->SizeX;
-            pMsg->sizeY = pTouch->SizeY;
-            pMsg->sizeZ = pTouch->SizeZ;
+            pMsg->hasSize = pTouch->HasSizeX && pTouch->HasSizeY && pTouch->HasSizeZ;
 
-            pMsg->hasX = pTouch->HasX;
-            pMsg->hasY = pTouch->HasY;
-            pMsg->hasZ = pTouch->HasZ;
-            pMsg->X = pTouch->X;
-            pMsg->Y = pTouch->Y;
-            pMsg->Z = pTouch->Z;
+            // Only store size if it is complete
+            if(pMsg->hasSize) {
+                pMsg->sizeX = pTouch->SizeX;
+                pMsg->sizeY = pTouch->SizeY;
+                pMsg->sizeZ = pTouch->SizeZ;
+            }
+
+            // Scale touch event to floating point position
+            pMsg->hasPosition = l_state.hasResolution;
+            if (l_state.hasResolution) {
+
+                // Do not divide by zero
+                ASSERT(l_state.resolutionX, "X resolution is 0");
+                ASSERT(l_state.resolutionY, "Y resolution is 0");
+
+                pMsg->posX = pTouch->X / (float)l_state.resolutionX;
+                pMsg->posY = pTouch->Y / (float)l_state.resolutionY;
+            }
         }
         break;
 
@@ -273,7 +298,7 @@ static zforce_error_t zforce_prepare_connection(proxy_t *pProxy) {
     // Then open the connection
     bool connectionAttemptResult = newConnection->Connect(newConnection);
     if (!connectionAttemptResult) {
-        if(zForceErrno == EOPENFAILED) {
+        if (zForceErrno == EOPENFAILED) {
             LOG_ERROR("Device not found\n");
             return zforce_device_nxe;
         }
@@ -340,7 +365,42 @@ static zforce_error_t zforce_prepare_connection(proxy_t *pProxy) {
     return zforce_ok;
 }
 
-static bool zforce_check_message(int wait, Message* pMsg) {
-    pMsg = l_state.zConnection->DeviceQueue->Dequeue(l_state.zConnection->DeviceQueue, wait);
-    return pMsg != NULL;
+static bool zforce_check_message(int wait, Message **ppMsg) {
+    ASSERT(ppMsg, "Received invalid out parameter ppMsg");
+    *ppMsg = l_state.zConnection->DeviceQueue->Dequeue(l_state.zConnection->DeviceQueue, wait);
+    return *ppMsg != NULL;
+}
+
+static bool zforce_get_resolution(proxy_t *pProxy) {
+
+    // Make request
+    if (!pProxy->zDevice->GetResolution(pProxy->zDevice)) {
+        LOG_ERROR("GetResolution error (%d) %s\n", zForceErrno, ErrorString(zForceErrno));
+        return false;
+    }
+
+    // Await response
+    Message *message = NULL;
+    if (!zforce_check_message(TIMEOUT_MS * 3, &message)) {
+        LOG_ERROR("GetResolution time out");
+        return false;
+    }
+
+    // Translate
+    ResolutionMessage *resolution = (ResolutionMessage *)message;
+    ASSERT(resolution, "resolution is null");
+
+    // Capture
+    if (!(resolution->HasX && resolution->HasY)) {
+        LOG_ERROR("GetResolution response is incomplete");
+        return false;
+    }
+
+    // All resolution must be greater than 0 since we use it scale the position
+    pProxy->hasResolution = resolution->X > 0
+                            && resolution->Y > 0;
+    pProxy->resolutionX = resolution->X;
+    pProxy->resolutionY = resolution->Y;
+
+    return true;
 }
