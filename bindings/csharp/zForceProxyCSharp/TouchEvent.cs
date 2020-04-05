@@ -70,7 +70,7 @@ namespace zForceProxyCSharp
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append("[{EventType.ToString()}]");
+            sb.Append($"[{EventType.ToString()}]");
 
             if (Size.HasValue)
             {
