@@ -18,6 +18,9 @@
 #include "zforce_proxy/zforce_error_string.h"
 #include "zforce_proxy/zforce_dump_message.h"
 
+// Ardonyx internal
+#include "zforce_proxy/zforce_proxy_common.h"
+
 static void DumpEnableMessage (Message * message);
 static void DumpDisableMessage (Message * message);
 static void DumpOperationModesMessage (Message * message);
@@ -44,7 +47,7 @@ static void DumpMessageError (Message * message);
  */
 void DumpMessage (Message * message)
 {
-    printf ("Message Serial Number = %" PRIu64 "\n", message->SerialNumber);
+    LOG_INFO ("Message Serial Number = %" PRIu64 "\n", message->SerialNumber);
 
     switch (message->MessageType)
     {
@@ -117,7 +120,7 @@ void DumpMessage (Message * message)
         break;
 
     default:
-        printf ("Unknown Message received!\n");
+        LOG_INFO ("Unknown Message received!\n");
         break;
     }
 
@@ -128,7 +131,7 @@ static void DumpEnableMessage (Message * message)
 {
     EnableMessage * enableMessage = (EnableMessage *)message;
 
-    printf ("Enable Message received.\n");
+    LOG_INFO ("Enable Message received.\n");
 
     if (message->Error)
     {
@@ -136,9 +139,9 @@ static void DumpEnableMessage (Message * message)
     }
     else
     {
-        printf ("  Enabled: %s.\n", enableMessage->Enabled ? "Yes" : "No");
-        printf ("  Continuous: %s.\n", enableMessage->ContinuousMode ? "Yes" : "No");
-        printf ("  NumberOfMessages: %d.\n", enableMessage->NumberOfMessages);
+        LOG_INFO ("  Enabled: %s.\n", enableMessage->Enabled ? "Yes" : "No");
+        LOG_INFO ("  Continuous: %s.\n", enableMessage->ContinuousMode ? "Yes" : "No");
+        LOG_INFO ("  NumberOfMessages: %d.\n", enableMessage->NumberOfMessages);
     }
 
 }
@@ -147,7 +150,7 @@ static void DumpMcuUniqueIdentifier(Message * message)
 {
     McuUniqueIdentifierMessage * mcuUniqueIdentifierMessage = (McuUniqueIdentifierMessage *)message;
 
-    printf ("Mcu Unique Identifier Message received.\n");
+    LOG_INFO ("Mcu Unique Identifier Message received.\n");
 
     if (message->Error)
     {
@@ -155,12 +158,12 @@ static void DumpMcuUniqueIdentifier(Message * message)
     }
     else
     {
-        printf("Mcu Unique Identifier is: ");
+        LOG_INFO("Mcu Unique Identifier is: ");
         for (uint32_t i = 0; i < mcuUniqueIdentifierMessage->BufferSize; i++)
         {
-            printf("%02X", mcuUniqueIdentifierMessage->McuUniqueIdentifier[i]);
+            LOG_INFO("%02X", mcuUniqueIdentifierMessage->McuUniqueIdentifier[i]);
         }
-        printf("\n");
+        LOG_INFO("\n");
     }
 }
 
@@ -168,7 +171,7 @@ static void DumpDisableMessage (Message * message)
 {
     DisableMessage * disableMessage = (DisableMessage *)message;
 
-    printf ("Disable Message received.\n");
+    LOG_INFO ("Disable Message received.\n");
 
     if (message->Error)
     {
@@ -176,7 +179,7 @@ static void DumpDisableMessage (Message * message)
     }
     else
     {
-        printf ("  Disabled: %s.\n", disableMessage->Disabled ? "Yes" : "No");
+        LOG_INFO ("  Disabled: %s.\n", disableMessage->Disabled ? "Yes" : "No");
     }
 
 }
@@ -188,7 +191,7 @@ static void DumpOperationModesMessage (Message * message)
     OperationModes          mask;
     OperationModes          values;
 
-    printf ("Operation Modes Message received.\n");
+    LOG_INFO ("Operation Modes Message received.\n");
 
     if (message->Error)
     {
@@ -199,44 +202,44 @@ static void DumpOperationModesMessage (Message * message)
         mask = operationModesMessage->Mask;
         values = operationModesMessage->Values;
 
-        printf ("Modes reported:\n");
+        LOG_INFO ("Modes reported:\n");
 
         if (NoOperationMode == mask)
         {
-            printf ("   No mode set.\n");
+            LOG_INFO ("   No mode set.\n");
         }
 
         if (DetectionMode & mask)
         {
-            printf ("   Detection mode %s.\n",
+            LOG_INFO ("   Detection mode %s.\n",
                     (DetectionMode & values) ? "on" : "off");
         }
 
         if (SignalsMode & mask)
         {
-            printf ("   Signals mode %s.\n",
+            LOG_INFO ("   Signals mode %s.\n",
                     (SignalsMode & values) ? "on" : "off");
         }
 
         if (LedLevelsMode & mask)
         {
-            printf ("   LED levels mode %s.\n",
+            LOG_INFO ("   LED levels mode %s.\n",
                     (LedLevelsMode & values) ? "on" : "off");
         }
 
         if (DetectionHidMode & mask)
         {
-            printf ("   Detection HID mode %s.\n",
+            LOG_INFO ("   Detection HID mode %s.\n",
                     (DetectionHidMode & values) ? "on" : "off");
         }
 
         if (GesturesMode & mask)
         {
-            printf ("   Gestures mode %s.\n",
+            LOG_INFO ("   Gestures mode %s.\n",
                     (GesturesMode & values) ? "on" : "off");
         }
 
-        printf ("End of report.\n");
+        LOG_INFO ("End of report.\n");
     }
 
 }
@@ -244,7 +247,7 @@ static void DumpOperationModesMessage (Message * message)
 static void DumpResolutionMessage (Message * message)
 {
     ResolutionMessage * resolutionMessage = (ResolutionMessage *)message;
-    printf ("Resolution Message received.\n");
+    LOG_INFO ("Resolution Message received.\n");
 
     if (message->Error)
     {
@@ -256,39 +259,39 @@ static void DumpResolutionMessage (Message * message)
     {
         if (resolutionMessage->HasX)
         {
-            printf ("  X: %8d", resolutionMessage->X);
+            LOG_INFO ("  X: %8d", resolutionMessage->X);
         }
 
         if (resolutionMessage->HasX && resolutionMessage->HasY)
         {
-            printf (", ");
+            LOG_INFO (", ");
         }
 
         if (resolutionMessage->HasY)
         {
-            printf ("Y: %8d", resolutionMessage->Y);
+            LOG_INFO ("Y: %8d", resolutionMessage->Y);
         }
 
         if (resolutionMessage->HasZ &&
             (resolutionMessage->HasX || resolutionMessage->HasY))
         {
-            printf (", ");
+            LOG_INFO (", ");
         }
 
         if (resolutionMessage->HasZ)
         {
-            printf ("Z: %8d", resolutionMessage->Z);
+            LOG_INFO ("Z: %8d", resolutionMessage->Z);
         }
 
     }
 
-    printf (".\n");
+    LOG_INFO (".\n");
 }
 
 static void DumpReflectiveEdgeFilterMessage(Message * message)
 {
     ReflectiveEdgeFilterMessage * reflectiveEdgeFilterMessage = (ReflectiveEdgeFilterMessage *)message;
-    printf("ReflectiveEdgeFilter Message received.\n");
+    LOG_INFO("ReflectiveEdgeFilter Message received.\n");
 
     if (message->Error)
     {
@@ -297,7 +300,7 @@ static void DumpReflectiveEdgeFilterMessage(Message * message)
 
     if (NULL != reflectiveEdgeFilterMessage)
     {
-        printf("The reflective edge filter is %s.\n", reflectiveEdgeFilterMessage->FilterIsOn ? "on" : "off");
+        LOG_INFO("The reflective edge filter is %s.\n", reflectiveEdgeFilterMessage->FilterIsOn ? "on" : "off");
     }
 
 }
@@ -305,7 +308,7 @@ static void DumpReflectiveEdgeFilterMessage(Message * message)
 static void DumpMergeTouchesMessage(Message * message)
 {
     MergeTouchesMessage * mergeTouchesMessage = (MergeTouchesMessage *)message;
-    printf("MergeTouches Message received.\n");
+    LOG_INFO("MergeTouches Message received.\n");
 
     if (message->Error)
     {
@@ -314,7 +317,7 @@ static void DumpMergeTouchesMessage(Message * message)
 
     if (NULL != mergeTouchesMessage)
     {
-        printf("The touches are %s.\n", mergeTouchesMessage->AreTouchesMerged ? "merged" : "not merged");
+        LOG_INFO("The touches are %s.\n", mergeTouchesMessage->AreTouchesMerged ? "merged" : "not merged");
     }
 
 }
@@ -323,7 +326,7 @@ static void DumpReverseTouchActiveArea (Message * message)
 {
     ReverseTouchActiveAreaMessage * reverseTouchActiveAreaMessage;
 
-    printf ("Reverse Touch Active Area Message received.\n");
+    LOG_INFO ("Reverse Touch Active Area Message received.\n");
 
     if (message->Error)
     {
@@ -333,10 +336,10 @@ static void DumpReverseTouchActiveArea (Message * message)
     {
         reverseTouchActiveAreaMessage = (ReverseTouchActiveAreaMessage *) message;
 
-        printf ("  X reversed is %s\n",
+        LOG_INFO ("  X reversed is %s\n",
                 reverseTouchActiveAreaMessage->XIsReversed ? "true" : "false");
 
-        printf ("  Y reversed is %s\n",
+        LOG_INFO ("  Y reversed is %s\n",
                 reverseTouchActiveAreaMessage->YIsReversed ? "true" : "false");
     }
 }
@@ -345,7 +348,7 @@ static void DumpFlipXYMessage (Message * message)
 {
     FlipXYMessage * flipXYMessage;
 
-    printf ("Flip XY Message received.\n");
+    LOG_INFO ("Flip XY Message received.\n");
 
     if (message->Error)
     {
@@ -355,7 +358,7 @@ static void DumpFlipXYMessage (Message * message)
     {
         flipXYMessage = (FlipXYMessage *) message;
 
-        printf ("  FlipXY is %s\n",
+        LOG_INFO ("  FlipXY is %s\n",
                 flipXYMessage->AxesAreFlipped ? "true" : "false");
     }
 
@@ -365,7 +368,7 @@ static void DumpTouchActiveArea (Message * message)
 {
     TouchActiveAreaMessage * touchActiveAreaMessage;
 
-    printf ("Touch Active Area Message received.\n");
+    LOG_INFO ("Touch Active Area Message received.\n");
 
     if (message->Error)
     {
@@ -377,17 +380,17 @@ static void DumpTouchActiveArea (Message * message)
 
         if (touchActiveAreaMessage->HasX)
         {
-            printf ("   X lower boundary = %u",
+            LOG_INFO ("   X lower boundary = %u",
                     touchActiveAreaMessage->LowerBoundaryX);
-            printf ("   X upper boundary = %u\n",
+            LOG_INFO ("   X upper boundary = %u\n",
                     touchActiveAreaMessage->UpperBoundaryX);
         }
 
         if (touchActiveAreaMessage->HasY)
         {
-            printf ("   Y lower boundary = %u",
+            LOG_INFO ("   Y lower boundary = %u",
                     touchActiveAreaMessage->LowerBoundaryY);
-            printf ("   Y upper boundary = %u\n",
+            LOG_INFO ("   Y upper boundary = %u\n",
                     touchActiveAreaMessage->UpperBoundaryY);
         }
 
@@ -432,74 +435,74 @@ static void DumpTouchMessage (Message * message)
         break;
     }
 
-    printf ("Id: %2d, Event: %7s", touchMessage->Id,
+    LOG_INFO ("Id: %2d, Event: %7s", touchMessage->Id,
             eventString);
 
     if (touchMessage->HasX || touchMessage->HasY ||
         touchMessage->HasZ)
     {
-        printf (", ");
+        LOG_INFO (", ");
 
         if (touchMessage->HasX)
         {
-            printf ("X: %8d", touchMessage->X);
+            LOG_INFO ("X: %8d", touchMessage->X);
         }
 
         if (touchMessage->HasX && touchMessage->HasY)
         {
-            printf (", ");
+            LOG_INFO (", ");
         }
 
         if (touchMessage->HasY)
         {
-            printf ("Y: %8d", touchMessage->Y);
+            LOG_INFO ("Y: %8d", touchMessage->Y);
         }
 
         if (touchMessage->HasZ &&
             (touchMessage->HasX || touchMessage->HasY))
         {
-            printf (", ");
+            LOG_INFO (", ");
         }
 
         if (touchMessage->HasZ)
         {
-            printf ("Z: %8d", touchMessage->Z);
+            LOG_INFO ("Z: %8d", touchMessage->Z);
         }
     }
 
     if (touchMessage->HasSizeX || touchMessage->HasSizeY ||
         touchMessage->HasSizeZ)
     {
-        printf (", ");
+        LOG_INFO (", ");
         if (touchMessage->HasSizeX)
         {
-            printf ("X Size: %8d", touchMessage->SizeX);
+            LOG_INFO ("X Size: %8d", touchMessage->SizeX);
         }
 
         if (touchMessage->HasSizeX && touchMessage->HasSizeY)
         {
-            printf (", ");
+            LOG_INFO (", ");
         }
 
         if (touchMessage->HasSizeY)
         {
-            printf ("Y Size: %8d", touchMessage->SizeY);
+            LOG_INFO ("Y Size: %8d", touchMessage->SizeY);
         }
 
         if (touchMessage->HasSizeZ &&
             (touchMessage->HasSizeX || touchMessage->HasSizeY))
         {
-            printf (", ");
+            LOG_INFO (", ");
         }
 
         if (touchMessage->HasSizeZ)
         {
-            printf ("Z Size: %8d", touchMessage->SizeZ);
+            LOG_INFO ("Z Size: %8d", touchMessage->SizeZ);
         }
 
     }
 
-    printf (".\n");
+    LOG_INFO (".\n");
 }
 
 static void DumpNumberOfTrackedObjectsMessage (Message * message)
@@ -507,7 +510,7 @@ static void DumpNumberOfTrackedObjectsMessage (Message * message)
     NumberOfTrackedObjectsMessage * numberOfTrackedObjectsMessage
         = (NumberOfTrackedObjectsMessage *)message;
 
-    printf ("Number Of Tracked Objects Message received.\n");
+    LOG_INFO ("Number Of Tracked Objects Message received.\n");
 
     if (message->Error)
     {
@@ -515,7 +518,7 @@ static void DumpNumberOfTrackedObjectsMessage (Message * message)
     }
     else
     {
-        printf ("  Number: %u.\n",
+        LOG_INFO ("  Number: %u.\n",
                 numberOfTrackedObjectsMessage->NumberOfTrackedObjects);
     }
 
@@ -526,7 +529,7 @@ static void DumpFingerFrequencyMessage (Message * message)
     FingerFrequencyMessage * fingerFrequencyMessage =
         (FingerFrequencyMessage *)message;
 
-    printf ("Finger Frequency Message received.\n");
+    LOG_INFO ("Finger Frequency Message received.\n");
 
     if (message->Error)
     {
@@ -534,7 +537,7 @@ static void DumpFingerFrequencyMessage (Message * message)
     }
     else
     {
-        printf ("  Frequency: %d.\n", fingerFrequencyMessage->Frequency);
+        LOG_INFO ("  Frequency: %d.\n", fingerFrequencyMessage->Frequency);
     }
 
 }
@@ -544,7 +547,7 @@ static void DumpIdleFrequencyMessage (Message * message)
     IdleFrequencyMessage * idleFrequencyMessage =
         (IdleFrequencyMessage *)message;
 
-    printf ("Idle Frequency Message received.\n");
+    LOG_INFO ("Idle Frequency Message received.\n");
 
     if (message->Error)
     {
@@ -552,7 +555,7 @@ static void DumpIdleFrequencyMessage (Message * message)
     }
     else
     {
-        printf ("  Frequency: %d.\n", idleFrequencyMessage->Frequency);
+        LOG_INFO ("  Frequency: %d.\n", idleFrequencyMessage->Frequency);
     }
 
 }
@@ -562,22 +565,22 @@ static void DumpDetectedObjectSizeRestrictionMessage (Message * message)
     DetectedObjectSizeRestrictionMessage * sizeMessage =
         (DetectedObjectSizeRestrictionMessage *) message;
 
-    printf ("Detected Object Size Restriction Message Received \n");
+    LOG_INFO ("Detected Object Size Restriction Message Received \n");
 
-    printf ("MinimumSize Enabled : %s \n",
+    LOG_INFO ("MinimumSize Enabled : %s \n",
             (sizeMessage->HasMinimumSize == true) ? "True" : "False");
 
     if (sizeMessage->HasMinimumSize)
     {
-        printf ("MinimumSize : %u \n", sizeMessage->MinimumSize);
+        LOG_INFO ("MinimumSize : %u \n", sizeMessage->MinimumSize);
     }
 
-    printf ("MaximumSize Enabled : %s \n",
+    LOG_INFO ("MaximumSize Enabled : %s \n",
             (sizeMessage->HasMaximumSize == true) ? "True" : "False");
 
     if (sizeMessage->HasMaximumSize)
     {
-        printf ("MaximumSize : %u \n", sizeMessage->MaximumSize);
+        LOG_INFO ("MaximumSize : %u \n", sizeMessage->MaximumSize);
     }
 
 }
@@ -586,7 +589,7 @@ static void DumpOffsetMessage (Message * message)
 {
     OffsetMessage * offsetMessage = (OffsetMessage *)message;
 
-    printf ("Offset Message received.\n");
+    LOG_INFO ("Offset Message received.\n");
 
     if (message->Error)
     {
@@ -596,12 +599,12 @@ static void DumpOffsetMessage (Message * message)
     {
         if (true == offsetMessage->HasOffsetX)
         {
-            printf ("  OffsetX: %d.\n", offsetMessage->OffsetX);
+            LOG_INFO ("  OffsetX: %d.\n", offsetMessage->OffsetX);
         }
 
         if (true == offsetMessage->HasOffsetY)
         {
-            printf ("  OffsetY: %d.\n", offsetMessage->OffsetY);
+            LOG_INFO ("  OffsetY: %d.\n", offsetMessage->OffsetY);
         }
     }
 
@@ -611,7 +614,7 @@ static void DumpHidDisplaySizeMessage (Message * message)
 {
     HidDisplaySizeMessage * hidDisplaySizeMessage = (HidDisplaySizeMessage *)message;
 
-    printf ("HidDisplaySize Message received.\n");
+    LOG_INFO ("HidDisplaySize Message received.\n");
 
     if (message->Error)
     {
@@ -622,12 +625,12 @@ static void DumpHidDisplaySizeMessage (Message * message)
 
         if (true == hidDisplaySizeMessage->HasSizeX)
         {
-            printf ("  SizeX: %d.\n", hidDisplaySizeMessage->SizeX);
+            LOG_INFO ("  SizeX: %d.\n", hidDisplaySizeMessage->SizeX);
         }
 
         if (true == hidDisplaySizeMessage->HasSizeY)
         {
-            printf ("  SizeY: %d.\n", hidDisplaySizeMessage->SizeY);
+            LOG_INFO ("  SizeY: %d.\n", hidDisplaySizeMessage->SizeY);
         }
 
     }
@@ -636,7 +639,7 @@ static void DumpHidDisplaySizeMessage (Message * message)
 
 static void DumpMessageError (Message * message)
 {
-    printf ("**  Error: (%d) %s\n",
+    LOG_ERROR ("**  Error: (%d) %s\n",
             message->ErrorCode,
             ErrorString (message->ErrorCode));
 }
