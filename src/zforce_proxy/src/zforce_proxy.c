@@ -273,6 +273,11 @@ static zforce_error_t zforce_prepare_connection(proxy_t *pProxy) {
     // Then open the connection
     bool connectionAttemptResult = newConnection->Connect(newConnection);
     if (!connectionAttemptResult) {
+        if(zForceErrno == EOPENFAILED) {
+            LOG_ERROR("Device not found\n");
+            return zforce_device_nxe;
+        }
+
         LOG_ERROR("Unable to connect to device: (%d) %s\n", zForceErrno, ErrorString(zForceErrno));
         return zforce_error_connection_error;
     }

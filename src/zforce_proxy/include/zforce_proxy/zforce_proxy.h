@@ -21,6 +21,7 @@ typedef enum {
     zforce_error_message_read,        ///< Error reading message
     zforce_no_message,                ///< Timed out setting configuration
     zforce_error_timeout,             ///< Operation timed out
+    zforce_device_nxe                 ///< Device could not be found
 } zforce_error_t;
 
 /**
@@ -74,6 +75,7 @@ zforce_error_t zforce_initialize(void);
  * @brief Create a new connection
  *
  * @retval zforce_ok connection succeeded
+ * @retval zforce_device_nxe no device connected
  * @retval zforce_connection_error check zForce SDK for error code
  */
 zforce_error_t zforce_connect();
