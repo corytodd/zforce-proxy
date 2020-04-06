@@ -5,3 +5,4 @@
 /bindings/**/bin/**
 *.sln.DotSettings.user
 /bindings/csharp/build/
+/ext/zForceSDK/
